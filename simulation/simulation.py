@@ -1,17 +1,16 @@
 import numpy as np
-from grid import *
-from utils.constants import EMPTY
+from grid.grid import *
+from utils.constants import *
 from utils.utils import swap_agents
 
 # --- Order Strategies ---
-def order_row(grid: np.ndarray) -> np.ndarray:
-  size = grid.shape[0]
-  return np.array([(i, j) for i in range(size) for j in range(size) if grid[i, j] != EMPTY])
+def order_row(positions: np.ndarray) -> np.ndarray:
+    return positions  # np.argwhere already returns row-major order
 
-def order_random(grid: np.ndarray) -> np.ndarray:
-  size = grid.shape[0]
-  positions = np.array([(i, j) for i in range(size) for j in range(size) if grid[i, j] != EMPTY])
-  return np.random.shuffle(positions)
+def order_random(positions: np.ndarray) -> np.ndarray:
+    np.random.shuffle(positions)
+    return positions
+
 
 # --- Move Strategies ---
 def move_horizontal(grid: np.ndarray, i: int, j: int):
@@ -31,22 +30,23 @@ def move_horizontal(grid: np.ndarray, i: int, j: int):
 
 def move_random(grid: np.ndarray, i: int, j: int):
     size = grid.shape[0]
+    direction = np.random.choice(['up', 'down', 'left', 'right'])
     for step in range(1, size):
-        up    = (i - step) % size
-        down  = (i + step) % size
-        right = (j + step) % size
-        left  = (j - step) % size
-
-        candidates = []
-        if grid[up,   j] == EMPTY: candidates.append((up,   j))
-        if grid[down, j] == EMPTY: candidates.append((down, j))
-        if grid[i, right] == EMPTY: candidates.append((i, right))
-        if grid[i, left]  == EMPTY: candidates.append((i, left))
-
-        if candidates:
-            ni, nj = candidates[np.random.choice(len(candidates))]
-            grid[i, j], grid[ni, nj] = grid[ni, nj], grid[i, j]
+        if direction == 'up':    ni, nj = (i - step) % size, j
+        if direction == 'down':  ni, nj = (i + step) % size, j
+        if direction == 'left':  ni, nj = i, (j - step) % size
+        if direction == 'right': ni, nj = i, (j + step) % size
+        if grid[ni, nj] == EMPTY:
+            swap_agents(grid, i, j, ni, nj)
             return
 
-def run() -> int:
-    ...
+def srun(grid: np.ndarray, H: int, order, move, max_iter=10_000) -> int:
+    for iteration in range(1, max_iter + 1):
+        mask = compute_mask(grid, H)
+        unhappies = np.argwhere(~mask)
+        if len(unhappies) == 0:
+            return iteration
+        for pos in order(unhappies):
+            move(grid, pos[0], pos[1])
+    print(f"Unhappy agents remaining: {np.sum(~compute_mask(grid, H) & (grid != EMPTY))}")
+    return -1

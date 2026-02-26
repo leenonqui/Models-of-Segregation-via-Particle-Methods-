@@ -1,4 +1,5 @@
 import numpy as np
+from utils.constants import RED, BLUE, EMPTY
 
 def create_grid(size: int, empty_frac: float, distribution: float) -> np.ndarray:
   """
@@ -48,15 +49,17 @@ def compute_mask(grid: np.ndarray, H: int) -> np.ndarray:
   Returns a boolean grid where True means the agent is happy
   """
   size = grid.shape[0]
-  positions = [(i,j) for i in range(size) for j in range(size)]
-  mask = np.array(list(map(lambda pos: is_happy(grid, pos[0], pos[1], H), positions)))
-  return mask.reshape(size, size)
+  offsets = [(-1,-1), (-1, 0), (-1, 1),
+              ( 0,-1),          ( 0, 1),
+              ( 1,-1), ( 1, 0), ( 1, 1)]
 
-def all_happy(grid: np.ndarray, H:int) -> bool:
-  """
-  Returns True if all agents are Happy (Loop condition)
-  """
-  mask = compute_mask(grid, H)
-  return not np.any(~mask) # True if any unhappy, then return the opposite
+  same = np.zeros((size, size), dtype=int)
+  for di, dj in offsets:
+      shifted = np.roll(np.roll(grid, di, axis=0), dj, axis=1) # we check for all cells for each possible offsett if it is same type as agent in cell i, j
+      same += (shifted == grid) & (shifted != EMPTY)
+
+  mask = same >= H
+  mask[grid == EMPTY] = True
+  return mask
 
 
