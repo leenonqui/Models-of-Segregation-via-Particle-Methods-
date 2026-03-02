@@ -1,18 +1,19 @@
 import numpy as np
-from grid.grid import *
-from utils.constants import *
+from grid.grid import compute_mask_same
+from utils.constants import EMPTY
 from utils.utils import swap_agents
 
-# --- Order Strategies ---
-def order_row(positions: np.ndarray) -> np.ndarray:
-    return positions  # np.argwhere already returns row-major order
+order_by_row = lambda pos, same: pos
+order_random = lambda pos, same: np.random.shuffle(pos) or pos
 
-def order_random(positions: np.ndarray) -> np.ndarray:
-    np.random.shuffle(positions)
-    return positions
+def order_by_unhappiness(pos: np.ndarray, same: np.ndarray) -> np.ndarray:
+    """
+    same: grid with the # of same type neighbours.
+    Returns unhappies sorted by ascending same-type neighbor count (most unhappy first).
+    """
+    scores = same[pos[:, 0], pos[:, 1]]
+    return pos[np.argsort(scores)]
 
-
-# --- Move Strategies ---
 def move_horizontal(grid: np.ndarray, i: int, j: int):
     size = grid.shape[0]
     for step in range(1, size):
@@ -42,11 +43,11 @@ def move_random(grid: np.ndarray, i: int, j: int):
 
 def srun(grid: np.ndarray, H: int, order, move, max_iter=10_000) -> int:
     for iteration in range(1, max_iter + 1):
-        mask = compute_mask(grid, H)
+        mask, same = compute_mask_same(grid, H)
         unhappies = np.argwhere(~mask)
         if len(unhappies) == 0:
             return iteration
-        for pos in order(unhappies):
+        for pos in order(unhappies, same):
             move(grid, pos[0], pos[1])
-    print(f"Unhappy agents remaining: {np.sum(~compute_mask(grid, H) & (grid != EMPTY))}")
+    print(f"Unhappy agents remaining: {np.sum(~compute_mask_same(grid, H)[0] & (grid != EMPTY))}")
     return -1
