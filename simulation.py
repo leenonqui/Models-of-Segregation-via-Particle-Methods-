@@ -9,7 +9,7 @@ class Simulation:
     def __init__(self, grid: Grid, threshold: int,
                  order_strategy: OrderStrategy,
                  move_strategy: MoveStrategy,
-                 max_iter: int = 10_000):
+                 max_iter: int = 500):
         self.grid = grid
         self.H = threshold
         self.order = order_strategy

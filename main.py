@@ -6,7 +6,7 @@ from utils.constants import SIZE, EMPTY_FRAC, DISTRIBUTION
 from grid import Grid
 from simulation import Simulation
 from strategies import (
-    RowOrder, RandomOrder, UnhappinessOrder, NearHappyOrder,
+    RowOrder, RandomOrder, UnhappinessOrder,
     HorizontalMove, RandomDirectionMove, RandomJumpMove,
 )
 
