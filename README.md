@@ -18,4 +18,4 @@ pip install numpy matplotlib
 ```
 
 ## Usage
-Open `notebook.ipynb` to run simulations and view results.
+Run main.py for analysis and results. Use animate.py to create animation of grid evolution over iteration steps
