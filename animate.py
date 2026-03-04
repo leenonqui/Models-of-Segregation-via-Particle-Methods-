@@ -6,7 +6,7 @@ from matplotlib.colors import ListedColormap
 from matplotlib.animation import FuncAnimation
 from copy import deepcopy
 from grid import Grid
-from strategies import OrderStrategy, MoveStrategy, RandomJumpMove, RandomOrder
+from strategies import OrderStrategy, MoveStrategy, RandomJumpMove, RandomOrder, UnhappinessOrder
 from utils.constants import SIZE, EMPTY_FRAC, DISTRIBUTION, EMPTY
 
 CMAP = ListedColormap(['white', 'red', 'blue'])
@@ -60,10 +60,10 @@ if __name__ == "__main__":
     seed = 42
     H = 4
     np.random.seed(seed)
-    grid = Grid(SIZE, EMPTY_FRAC, DISTRIBUTION)
+    grid = Grid(SIZE, EMPTY_FRAC, DISTRIBUTION, H)
 
-    order = RandomOrder()
+    order = UnhappinessOrder()
     move = RandomJumpMove()
 
     frames = capture_run(deepcopy(grid), H, order, move)
-    animate(frames, title=f"seed={seed} H={H}", save_path="schelling_nearhappy_jump.mp4")
+    animate(frames, title=f"seed={seed} H={H}", save_path="schelling_greedy_jump.mp4")

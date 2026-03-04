@@ -6,7 +6,7 @@ from utils.constants import SIZE, EMPTY_FRAC, DISTRIBUTION
 from grid import Grid
 from simulation import Simulation
 from strategies import (
-    RowOrder, RandomOrder, UnhappinessOrder,
+    RowOrder, RandomOrder, UnhappinessOrder, NearHappyOrder,
     HorizontalMove, RandomDirectionMove, RandomJumpMove,
 )
 
@@ -30,7 +30,7 @@ def part_a_i():
 
     for seed in seeds:
         np.random.seed(seed)
-        grid = Grid(SIZE, EMPTY_FRAC, DISTRIBUTION)
+        grid = Grid(SIZE, EMPTY_FRAC, DISTRIBUTION, 4)
         save_grid(grid.to_array(), "Initial", f"a_i_seed{seed}_init")
 
         for order in orders:
@@ -47,12 +47,12 @@ def part_a_i():
 
 def part_a_ii():
     seeds = [42, 67, 69, 121, 7]
-    orders = [UnhappinessOrder()]
+    orders = [UnhappinessOrder(), NearHappyOrder()]
     moves = [RandomJumpMove()]
 
     for seed in seeds:
         np.random.seed(seed)
-        grid = Grid(SIZE, EMPTY_FRAC, DISTRIBUTION)
+        grid = Grid(SIZE, EMPTY_FRAC, DISTRIBUTION, 4)
         save_grid(grid.to_array(), "Initial", f"a_ii_seed{seed}_init")
 
         for order in orders:
@@ -75,7 +75,7 @@ def part_b():
     for H in range(1, 9):
         for seed in seeds:
             np.random.seed(seed)
-            g = Grid(SIZE, EMPTY_FRAC, DISTRIBUTION)
+            g = Grid(SIZE, EMPTY_FRAC, DISTRIBUTION, H)
             sim = Simulation(g, threshold=H, order_strategy=order, move_strategy=move)
             iters = sim.run()
             label = f"H={H}, iter: {iters}" if iters != -1 else f"H={H}, bound hit"
@@ -88,7 +88,7 @@ if __name__ == "__main__":
     os.makedirs(FIGDIR, exist_ok=True)
 
     print("Part a(i): baseline strategies")
-    part_a_i()
+    # part_a_i()
 
     print("\nPart a(ii): proposed strategies")
     part_a_ii()

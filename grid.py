@@ -10,7 +10,8 @@ OFFSETS = [(-1, -1), (-1, 0), (-1, 1),
 class Grid:
     """Periodic boundary grid backed by ndarray for vectorized operations."""
 
-    def __init__(self, size: int, empty_frac: float, distribution: float):
+    def __init__(self, size: int, empty_frac: float, distribution: float, H: int):
+        self.H = H
         self.size = size
         n = size * size
         n_empty = int(n * empty_frac)
@@ -23,13 +24,13 @@ class Grid:
     def swap(self, r1: int, c1: int, r2: int, c2: int):
         self.data[r1, c1], self.data[r2, c2] = self.data[r2, c2], self.data[r1, c1]
 
-    def compute_happiness(self, H: int) -> tuple[np.ndarray, np.ndarray]:
+    def compute_happiness(self) -> tuple[np.ndarray, np.ndarray]:
         """Returns (happy_mask, phi) via vectorized roll."""
         phi = np.zeros_like(self.data, dtype=int)
         for dr, dc in OFFSETS:
             shifted = np.roll(np.roll(self.data, dr, axis=0), dc, axis=1)
             phi += (shifted == self.data) & (shifted != EMPTY)
-        happy = phi >= H
+        happy = phi >= self.H
         happy[self.data == EMPTY] = True
         return happy, phi
 

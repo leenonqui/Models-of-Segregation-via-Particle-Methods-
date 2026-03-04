@@ -31,6 +31,11 @@ class UnhappinessOrder(OrderStrategy):
         scores = phi[unhappies[:, 0], unhappies[:, 1]]
         return unhappies[np.argsort(scores)]
 
+class NearHappyOrder(OrderStrategy):
+    """Move cell close to being happy (closest to H)."""
+    def order(self, unhappies, phi):
+        scores = phi[unhappies[:, 0], unhappies[:, 1]]
+        return unhappies[np.argsort(-scores)] # sames as [::-1] with .argsort()
 
 # ── Move strategies ──────────────────────────────────────────────
 
@@ -69,30 +74,33 @@ class RandomDirectionMove(MoveStrategy):
             if grid.data[nr, nc] == EMPTY:
                 grid.swap(r, c, nr, nc)
                 return
-class RandomJumpMove(MoveStrategy):
 
-    def __init__(self, alpha: float = 1.5, max_retries: int = 20):
+class RandomJumpMove(MoveStrategy):
+    def __init__(self, alpha: float = 1.565, max_retries: int = 20):
         self.alpha = alpha
         self.max_retries = max_retries
+        self.dist_range = np.arange(1, (100 // 2) + 1)
+        self.dist_probs = self.dist_range.astype(float) ** (-self.alpha)
+        self.dist_probs /= self.dist_probs.sum()
 
-    def _sample_distance(self, size: int) -> int:
-        max_d = size // 2
-        distances = np.arange(1, max_d + 1)
-        weights = distances.astype(float) ** (-self.alpha)
-        weights /= weights.sum()
-        return np.random.choice(distances, p=weights)
+    def _sample_distance(self) -> int:
+        return np.random.choice(self.dist_range, p=self.dist_probs)
 
     def move(self, grid: Grid, r: int, c: int):
         s = grid.size
         agent_type = grid.data[r, c]
-        for _ in range(self.max_retries):
-            d = self._sample_distance(s)
-            angle = np.random.uniform(0, 2 * np.pi)
-            dr = int(round(d * np.sin(angle)))
-            dc = int(round(d * np.cos(angle)))
-            cr, cc = (r + dr) % s, (c + dc) % s
+        phi = grid.phi_at(r, c, agent_type)
+        u  = max(0, (grid.H - phi)/grid.H)
+        for _ in range(int(self.max_retries*(1 + u/2))):
+            d = self._sample_distance() * (1 + u/2)
+            angles = np.random.uniform(0, 2 * np.pi, int(8 * (1+u)))
+            empties = []
+            for angle in angles:
+                dr = int(round(d * np.sin(angle)))
+                dc = int(round(d * np.cos(angle)))
+                cr, cc = (r + dr) % s, (c + dc) % s
 
-            empties = [(nr, nc) for nr, nc in grid.neighbors(cr, cc)
+                empties += [(nr, nc) for nr, nc in grid.neighbors(cr, cc)
                        if grid.data[nr, nc] == EMPTY]
             if not empties:
                 continue

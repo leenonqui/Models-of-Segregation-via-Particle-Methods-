@@ -19,12 +19,12 @@ class Simulation:
     def run(self) -> int:
         """Run until stable or max_iter. Returns iteration count or -1."""
         for it in range(1, self.max_iter + 1):
-            happy, phi = self.grid.compute_happiness(self.H)
+            happy, phi = self.grid.compute_happiness()
             unhappies = np.argwhere(~happy)
             if len(unhappies) == 0:
                 return it
             for r, c in self.order.order(unhappies, phi):
                 self.move.move(self.grid, r, c)
-        remaining = np.sum(~self.grid.compute_happiness(self.H)[0] & (self.grid.data != EMPTY))
+        remaining = np.sum(~self.grid.compute_happiness()[0] & (self.grid.data != EMPTY))
         print(f"Unhappy agents remaining: {remaining}")
         return -1
