@@ -88,7 +88,7 @@ if __name__ == "__main__":
     os.makedirs(FIGDIR, exist_ok=True)
 
     print("Part a(i): baseline strategies")
-    # part_a_i()
+    part_a_i()
 
     print("\nPart a(ii): proposed strategies")
     part_a_ii()
